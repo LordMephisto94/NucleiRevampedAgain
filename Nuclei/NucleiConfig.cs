@@ -45,8 +45,8 @@ internal static class NucleiConfig
             "Steam IDs of admins, separated by semicolons.");
         Moderators = config.Bind(RolesSection, "Moderators", "",
             "Steam IDs of moderators, separated by semicolons.");
-        ShowRoleTags = config.Bind(RolesSection, "ShowRoleTags", false,
-            "Show a tag next to the names of staff members.");
+        ShowRoleTags = config.Bind(RolesSection, "ShowRoleTags", true,
+            "Show a tag next to the names of staff members. Players only see tags if Server Tags is enabled in their game settings.");
         OwnerTag = config.Bind(RolesSection, "OwnerTag", "OWNER", "Tag shown for the owner when ShowRoleTags is on.");
         AdminTag = config.Bind(RolesSection, "AdminTag", "ADMIN", "Tag shown for admins when ShowRoleTags is on.");
         ModeratorTag = config.Bind(RolesSection, "ModeratorTag", "MOD", "Tag shown for moderators when ShowRoleTags is on.");
