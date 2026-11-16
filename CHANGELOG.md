@@ -29,6 +29,8 @@ Rewritten for the official Nuclear Option dedicated server (game 0.34.x, Steam a
 - Chat logging to the server console as `[Chat] [All|Team] Name (steamid): message`.
 - `/nextmission <mission> [normal|coop_<team>] [minutes]` autocompletes every built-in multiplayer
   mission, including co-op variants with a team choice, and takes an optional time limit in minutes.
+- `unkick` / `/unkick`, `kicks` and `clearkicks` let kicked players back in before the mission
+  changes or the server restarts. The console `kick` is now a mission kick, like `/adminkick`.
 - All plugin messages go through the Unity log, so they appear in panel consoles such as AMP.
 
 ## 1.3.3 - 2025-05-18

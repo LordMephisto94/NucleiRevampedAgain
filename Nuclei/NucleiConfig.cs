@@ -30,6 +30,7 @@ internal static class NucleiConfig
 
     internal static ConfigEntry<Role> SayPermission = null!;
     internal static ConfigEntry<Role> BanPermission = null!;
+    internal static ConfigEntry<Role> UnkickPermission = null!;
     internal static ConfigEntry<Role> EndMissionPermission = null!;
     internal static ConfigEntry<Role> NextMissionPermission = null!;
     internal static ConfigEntry<Role> SetRolePermission = null!;
@@ -62,6 +63,7 @@ internal static class NucleiConfig
 
         SayPermission = BindPermission(config, "say", Role.Admin);
         BanPermission = BindPermission(config, "ban", Role.Moderator);
+        UnkickPermission = BindPermission(config, "unkick", Role.Moderator);
         EndMissionPermission = BindPermission(config, "endmission", Role.Admin);
         NextMissionPermission = BindPermission(config, "nextmission", Role.Admin);
         SetRolePermission = BindPermission(config, "setrole", Role.Owner);

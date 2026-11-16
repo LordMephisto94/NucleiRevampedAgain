@@ -16,7 +16,7 @@ vote-kicks through `DedicatedServerConfig.json`. NucleiRevamped adds what the ga
   through the game's ModdingApi, so they show up in `/help` and autocomplete.
 * **Welcome message and Message of the Day**, with placeholders.
 * **Console commands** for server panels (AMP, Pterodactyl, a terminal): `status`, `say`, `kick`,
-  `ban`, `setrole`, `endmission`, `nextmission`, `reload` and `help`.
+  `unkick`, `kicks`, `clearkicks`, `ban`, `setrole`, `endmission`, `nextmission`, `reload` and `help`.
 * **Chat logging** to the server console.
 
 ## Installing on AMP
@@ -43,6 +43,7 @@ Linux, use BepInEx's `run_bepinex.sh` or set the Doorstop environment variables 
 | `/ban <player> [reason]` | Moderator | Adds the player to `ban_list.txt` and kicks them |
 | `/endmission [seconds]` | Admin | Ends the current mission (10 s by default) |
 | `/nextmission [mission] [normal\|coop_bdf\|coop_pala] [minutes]` | Admin | Queues the next mission, optionally co-op as a team and with a time limit; with no arguments, lists missions |
+| `/unkick [player\|steamid]` | Moderator | Lets a kicked player rejoin now; with no argument, lists kicked players |
 | `/setrole <player> <role>` | Owner | Sets a role: `player`, `moderator`, `admin` or `owner` |
 
 `/nextmission` autocompletes every built-in multiplayer mission. Mission names use underscores
@@ -53,6 +54,10 @@ current mission's limit. The command only queues the mission; `/endmission` swit
 
 Role tags (`ShowRoleTags`) are sent to everyone, but each player only sees them if **Server Tags** is
 enabled in their own game settings.
+
+Kicks: the game's `/adminkick` and vote kicks block the player until the mission changes. Nuclei's console
+`kick` does the same. A kick from the scoreboard's right-click menu blocks the player until the server
+restarts. `unkick` / `/unkick` lifts both kinds, `kicks` lists them, and `clearkicks` empties both lists.
 
 You can change each command's required role in the `[Commands]` section. The game's built-in
 `/help`, `/kick` (vote), `/adminkick`, `/ping` and `/clear` keep working.

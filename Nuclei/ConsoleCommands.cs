@@ -23,7 +23,10 @@ internal static class ConsoleCommands
         "Nuclei console commands:\n" +
         "  status                         mission and player list\n" +
         "  say <message>                  broadcast a chat message\n" +
-        "  kick <player>                  kick by name or Steam ID\n" +
+        "  kick <player>                  kick until the mission changes\n" +
+        "  unkick <player|steamid>        let a kicked player rejoin now\n" +
+        "  kicks                          list kicked players\n" +
+        "  clearkicks                     let all kicked players rejoin\n" +
         "  ban <player> [reason]          ban by name or Steam ID\n" +
         "  setrole <player> <role>        player | moderator | admin | owner\n" +
         "  endmission [seconds]           end the current mission (default 10)\n" +
@@ -102,6 +105,18 @@ internal static class ConsoleCommands
                 Reply(ServerActions.TryResolvePlayer(args[0], out var kickId, out var kickError)
                     ? ServerActions.Kick(kickId)
                     : kickError);
+                break;
+            case "unkick":
+                if (args.Length == 0) { Reply("Usage: unkick <player|steamid>"); break; }
+                Reply(ServerActions.TryResolveKicked(rest, out var unkickId, out var unkickError)
+                    ? ServerActions.Unkick(unkickId)
+                    : unkickError);
+                break;
+            case "kicks":
+                Reply(ServerActions.ListKicks());
+                break;
+            case "clearkicks":
+                Reply(ServerActions.ClearKicks());
                 break;
             case "ban":
                 if (args.Length == 0) { Reply("Usage: ban <player> [reason]"); break; }

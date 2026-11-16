@@ -43,6 +43,19 @@ internal static class ChatCommandSetup
             ],
             NucleiConfig.BanPermission.Value);
 
+        // Kicked players are offline, so this takes a Steam ID or a name from the kick list as text.
+        Register("unkick", "Let a kicked player rejoin now (Steam ID or name; no argument lists kicks)",
+            Sync(request =>
+            {
+                if (request.Args.Count == 0)
+                    return ChatCommandResult.Ok(ServerActions.ListKicks());
+                return ServerActions.TryResolveKicked(string.Join(" ", request.Args), out var steamId, out var error)
+                    ? Ok(ServerActions.Unkick(steamId))
+                    : ChatCommandResult.ClientError(error);
+            }),
+            [new ChatCommandArgument("player", ChatArgumentType.Text, true)],
+            NucleiConfig.UnkickPermission.Value);
+
         Register("endmission", "End the current mission (default: in 10 seconds)",
             Sync(request =>
             {

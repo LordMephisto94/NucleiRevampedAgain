@@ -50,13 +50,77 @@ internal static class ServerActions
         return false;
     }
 
+    private static NuclearOption.Networking.Authentication.NetworkAuthenticatorNuclearOption Auth =>
+        NetworkManagerNuclearOption.i.Authenticator;
+
+    /// <summary>
+    ///     Kicks for the rest of the current mission, same as the game's /adminkick. The game's own
+    ///     direct kick (scoreboard, remote "kick-player") instead blocks the player until the server
+    ///     restarts, which on a dedicated server can be days.
+    /// </summary>
     internal static string Kick(ulong steamId)
     {
-        if (PlayerHandle.TryGet(steamId, out var handle) && handle.IsHost)
+        if (!PlayerHandle.TryGet(steamId, out var handle))
+            return $"{steamId} is not connected.";
+        if (handle.IsHost)
             return "Can't kick the host.";
-        return BanServerCommands.KickPlayer(new CSteamID(steamId))
-            ? $"Kicked {Names.Of(steamId)} ({steamId})."
-            : $"{steamId} is not connected.";
+
+        var name = Names.Of(handle);
+        var mention = handle.Mention;
+        Auth.OnMissionKick(new CSteamID(steamId));
+        if (Messages.ServerActive)
+            ServerChat.SendToAll($"{mention} was kicked by an admin.", false);
+        return $"Kicked {name} ({steamId}). They can rejoin when the mission changes, or after 'unkick'.";
+    }
+
+    /// <summary>Lets a kicked player back in (both the mission and the until-restart kick lists).</summary>
+    internal static string Unkick(ulong steamId)
+    {
+        var id = new CSteamID(steamId);
+        var found = Auth.KickList.Contains(id) | Auth.MissionKickList.Contains(id);
+        Auth.KickList.Remove(id);
+        Auth.MissionKickList.Remove(id);
+        return found
+            ? $"Unkicked {Names.Of(steamId)} ({steamId}); they can rejoin now."
+            : $"{steamId} is not on a kick list. (Bans are in ban_list.txt.)";
+    }
+
+    internal static string ListKicks()
+    {
+        var lines = Auth.KickList.GetItems().Select(e => $"  {Names.Of(e.Item1.m_SteamID)} | {e.Item1.m_SteamID} | until restart")
+            .Concat(Auth.MissionKickList.GetItems().Select(e => $"  {Names.Of(e.Item1.m_SteamID)} | {e.Item1.m_SteamID} | this mission"))
+            .ToList();
+        return lines.Count == 0 ? "Nobody is kicked." : "Kicked players:\n" + string.Join("\n", lines);
+    }
+
+    internal static string ClearKicks()
+    {
+        Auth.KickList.Clear();
+        Auth.MissionKickList.Clear();
+        return "Kick lists cleared; everyone except banned players can rejoin.";
+    }
+
+    /// <summary>Resolves a Steam ID, or the name of a player on one of the kick lists.</summary>
+    internal static bool TryResolveKicked(string text, out ulong steamId, out string error)
+    {
+        error = "";
+        if (PlayerHandle.TryParseSteamId(text, out steamId))
+            return true;
+        var matches = Auth.KickList.GetItems().Concat(Auth.MissionKickList.GetItems())
+            .Select(e => e.Item1.m_SteamID)
+            .Distinct()
+            .Where(id => Names.Of(id).IndexOf(text, StringComparison.OrdinalIgnoreCase) >= 0)
+            .ToList();
+        if (matches.Count == 1)
+        {
+            steamId = matches[0];
+            return true;
+        }
+
+        error = matches.Count == 0
+            ? $"No kicked player matches '{text}'. Use their Steam ID (see 'kicks')."
+            : $"'{text}' matches {matches.Count} kicked players; use the Steam ID.";
+        return false;
     }
 
     internal static string Ban(ulong steamId, string reason)
