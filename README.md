@@ -12,7 +12,7 @@ vote-kicks through `DedicatedServerConfig.json`. NucleiRevamped adds what the ga
 
 * **Staff roles.** Owner, Admin and Moderator are assigned from Steam IDs in the config. They use the
   game's own permission system, so built-in commands like `/adminkick` work for your staff.
-* **Chat commands:** `/say`, `/ban`, `/endmission`, `/nextmission` and `/setrole`. They're registered
+* **Chat commands:** `/say`, `/ban`, `/unkick`, `/endmission`, `/nextmission` and `/setrole`. They're registered
   through the game's ModdingApi, so they show up in `/help` and autocomplete.
 * **Welcome message and Message of the Day**, with placeholders.
 * **Console commands** for server panels (AMP, Pterodactyl, a terminal): `status`, `say`, `kick`,
