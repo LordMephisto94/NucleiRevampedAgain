@@ -25,6 +25,37 @@ internal static class ChatCommandSetup
             [new ChatCommandArgument("message", ChatArgumentType.Text, false)],
             NucleiConfig.SayPermission.Value);
 
+        Register("announce", "Announcement in the message feed with a sound",
+            Sync(request =>
+            {
+                var result = Messages.Announce(string.Join(" ", request.Args));
+                return result == "Announcement shown." ? ChatCommandResult.Ok(result) : ChatCommandResult.ClientError(result);
+            }),
+            [new ChatCommandArgument("message", ChatArgumentType.Text, false)],
+            NucleiConfig.AnnouncePermission.Value);
+
+        // Seconds is required and first: the game validates arguments by position, so an optional
+        // number before free text would reject "/popup Hello".
+        Register("popup", "Popup window for everyone. Seconds 0 = until OK. Optional title: Title | Message",
+            Sync(request =>
+            {
+                if (!request.TryGetInt(0, out var seconds, out var error))
+                    return ChatCommandResult.ClientError(error);
+                if (seconds < 0)
+                    return ChatCommandResult.ClientError("Seconds can't be negative (0 = until someone presses OK).");
+                var text = string.Join(" ", request.Args.Skip(1));
+                var bar = text.IndexOf('|');
+                var result = bar >= 0
+                    ? Messages.Popup(text.Substring(0, bar), text.Substring(bar + 1), seconds)
+                    : Messages.Popup("", text, seconds);
+                return result.StartsWith("Popup") ? ChatCommandResult.Ok(result) : ChatCommandResult.ClientError(result);
+            }),
+            [
+                new ChatCommandArgument("seconds", ChatArgumentType.Int, false),
+                new ChatCommandArgument("title|message", ChatArgumentType.Text, false)
+            ],
+            NucleiConfig.PopupPermission.Value);
+
         Register("ban", "Ban a player (writes to ban_list.txt)",
             Sync(request =>
             {
@@ -53,7 +84,7 @@ internal static class ChatCommandSetup
                     ? Ok(ServerActions.Unkick(steamId))
                     : ChatCommandResult.ClientError(error);
             }),
-            [new ChatCommandArgument("player", ChatArgumentType.Text, true)],
+            [new ChatCommandArgument("player|steamid", ChatArgumentType.Text, true)],
             NucleiConfig.UnkickPermission.Value);
 
         Register("endmission", "End the current mission (default: in 10 seconds)",

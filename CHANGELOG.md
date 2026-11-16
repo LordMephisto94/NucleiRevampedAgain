@@ -31,6 +31,9 @@ Rewritten for the official Nuclear Option dedicated server (game 0.34.x, Steam a
   mission, including co-op variants with a team choice, and takes an optional time limit in minutes.
 - `unkick` / `/unkick`, `kicks` and `clearkicks` let kicked players back in before the mission
   changes or the server restarts. The console `kick` is now a mission kick, like `/adminkick`.
+- `/announce` / `announce`: a message-feed announcement with a sound.
+- `/popup <seconds> <title|message>` / `popup`: a centred popup window (the mission dialog box) that
+  closes itself after the given seconds.
 - All plugin messages go through the Unity log, so they appear in panel consoles such as AMP.
 
 ## 1.3.3 - 2025-05-18

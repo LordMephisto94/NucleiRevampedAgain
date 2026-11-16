@@ -23,6 +23,9 @@ internal static class ConsoleCommands
         "Nuclei console commands:\n" +
         "  status                         mission and player list\n" +
         "  say <message>                  broadcast a chat message\n" +
+        "  announce <message>             message-feed announcement with sound\n" +
+        "  popup [seconds] [title |] <message>\n" +
+        "                                 centred popup window for everyone\n" +
         "  kick <player>                  kick until the mission changes\n" +
         "  unkick <player|steamid>        let a kicked player rejoin now\n" +
         "  kicks                          list kicked players\n" +
@@ -99,6 +102,12 @@ internal static class ConsoleCommands
                 if (rest.Length == 0) { Reply("Usage: say <message>"); break; }
                 Messages.Broadcast(rest);
                 Reply($"Said: {rest}");
+                break;
+            case "popup":
+                Reply(Messages.PopupFromArgs(rest));
+                break;
+            case "announce":
+                Reply(Messages.Announce(rest));
                 break;
             case "kick":
                 if (args.Length == 0) { Reply("Usage: kick <player>"); break; }

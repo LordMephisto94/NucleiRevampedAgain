@@ -12,10 +12,10 @@ vote-kicks through `DedicatedServerConfig.json`. NucleiRevamped adds what the ga
 
 * **Staff roles.** Owner, Admin and Moderator are assigned from Steam IDs in the config. They use the
   game's own permission system, so built-in commands like `/adminkick` work for your staff.
-* **Chat commands:** `/say`, `/ban`, `/unkick`, `/endmission`, `/nextmission` and `/setrole`. They're registered
+* **Chat commands:** `/say`, `/announce`, `/popup`, `/ban`, `/unkick`, `/endmission`, `/nextmission` and `/setrole`. They're registered
   through the game's ModdingApi, so they show up in `/help` and autocomplete.
 * **Welcome message and Message of the Day**, with placeholders.
-* **Console commands** for server panels (AMP, Pterodactyl, a terminal): `status`, `say`, `kick`,
+* **Console commands** for server panels (AMP, Pterodactyl, a terminal): `status`, `say`, `announce`, `popup`, `kick`,
   `unkick`, `kicks`, `clearkicks`, `ban`, `setrole`, `endmission`, `nextmission`, `reload` and `help`.
 * **Chat logging** to the server console.
 
@@ -40,6 +40,8 @@ Linux, use BepInEx's `run_bepinex.sh` or set the Doorstop environment variables 
 | Command | Default role | What it does |
 |---|---|---|
 | `/say <message>` | Admin | Broadcasts a server message |
+| `/announce <message>` | Admin | Server announcement in the message feed, with a sound |
+| `/popup <seconds> <title\|message>` | Admin | Centred popup window for everyone; `0` seconds = until someone presses OK |
 | `/ban <player> [reason]` | Moderator | Adds the player to `ban_list.txt` and kicks them |
 | `/endmission [seconds]` | Admin | Ends the current mission (10 s by default) |
 | `/nextmission [mission] [normal\|coop_bdf\|coop_pala] [minutes]` | Admin | Queues the next mission, optionally co-op as a team and with a time limit; with no arguments, lists missions |
@@ -51,6 +53,11 @@ Linux, use BepInEx's `run_bepinex.sh` or set the Doorstop environment variables 
 `/nextmission Escalation normal 120` and `/nextmission Terminal_Control coop_pala 90`. Without a
 duration, missions from your rotation keep their configured `MaxTime`, and other missions use the
 current mission's limit. The command only queues the mission; `/endmission` switches immediately.
+
+`/popup` uses the game's mission dialog box. There is one per server, so the first player to press OK
+closes it for everyone, and scripted PvE mission dialogs wait until it closes. That's why it closes
+itself after `<seconds>` (`PopupSeconds` in the config sets the console default). Example:
+`/popup 15 Server Notice | Restarting in 5 minutes`.
 
 Role tags (`ShowRoleTags`) are sent to everyone, but each player only sees them if **Server Tags** is
 enabled in their own game settings.

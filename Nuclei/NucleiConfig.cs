@@ -29,6 +29,9 @@ internal static class NucleiConfig
     internal static ConfigEntry<int> MotDIntervalSeconds = null!;
 
     internal static ConfigEntry<Role> SayPermission = null!;
+    internal static ConfigEntry<Role> AnnouncePermission = null!;
+    internal static ConfigEntry<Role> PopupPermission = null!;
+    internal static ConfigEntry<int> PopupSeconds = null!;
     internal static ConfigEntry<Role> BanPermission = null!;
     internal static ConfigEntry<Role> UnkickPermission = null!;
     internal static ConfigEntry<Role> EndMissionPermission = null!;
@@ -62,6 +65,10 @@ internal static class NucleiConfig
             "Seconds between Message of the Day broadcasts. 0 disables it.");
 
         SayPermission = BindPermission(config, "say", Role.Admin);
+        AnnouncePermission = BindPermission(config, "announce", Role.Admin);
+        PopupPermission = BindPermission(config, "popup", Role.Admin);
+        PopupSeconds = config.Bind(MessagesSection, "PopupSeconds", 10,
+            "Seconds before a popup closes itself (the popup is shared, so any player pressing OK closes it for everyone). 0 = stays until someone presses OK.");
         BanPermission = BindPermission(config, "ban", Role.Moderator);
         UnkickPermission = BindPermission(config, "unkick", Role.Moderator);
         EndMissionPermission = BindPermission(config, "endmission", Role.Admin);
