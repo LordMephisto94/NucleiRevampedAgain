@@ -35,6 +35,9 @@ internal static class ConsoleCommands
         "  endmission [seconds]           end the current mission (default 10)\n" +
         "  nextmission [mission] [normal|coop_<team>] [minutes]\n" +
         "                                 set the next mission, or list missions\n" +
+        "  workshopmission <id> [minutes] queue a Steam Workshop mission by ID\n" +
+        "  missions [builtin|custom|workshop]  list missions\n" +
+        "  refreshmissions                re-scan custom/Workshop missions\n" +
         "  reload                         reload NucleiRevamped.cfg\n" +
         "  help                           this list";
 
@@ -164,6 +167,17 @@ internal static class ConsoleCommands
                     Reply(ServerActions.ListMissions());
                 else
                     UniTask.Void(async () => Reply(await ServerActions.SetNextMission(args)));
+                break;
+            case "missions":
+                Reply(ServerActions.ListMissions(args.Length > 0 ? args[0] : null));
+                break;
+            case "refreshmissions":
+                Reply(ChatCommandSetup.RefreshMissions());
+                break;
+            case "workshopmission":
+                if (args.Length == 0) { Reply("Usage: workshopmission <Workshop item ID> [minutes]"); break; }
+                var workshopArgs = new[] { MissionCatalog.WorkshopWord }.Concat(args).ToList();
+                UniTask.Void(async () => Reply(await ServerActions.SetNextMission(workshopArgs)));
                 break;
             case "reload":
                 Plugin.Instance?.Config.Reload();

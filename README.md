@@ -15,7 +15,7 @@ vote-kicks through `DedicatedServerConfig.json`. NucleiRevamped adds what the ga
 * **Chat commands:** `/say`, `/announce`, `/popup`, `/ban`, `/unkick`, `/endmission`, `/nextmission` and `/setrole`. They're registered
   through the game's ModdingApi, so they show up in `/help` and autocomplete.
 * **Welcome message and Message of the Day**, with placeholders.
-* **Console commands** for server panels (AMP, Pterodactyl, a terminal): `status`, `say`, `announce`, `popup`, `kick`,
+* **Console commands** for server panels (AMP, Pterodactyl, a terminal): `status`, `say`, `announce`, `popup`, `missions`, `workshopmission`, `refreshmissions`, `kick`,
   `unkick`, `kicks`, `clearkicks`, `ban`, `setrole`, `endmission`, `nextmission`, `reload` and `help`.
 * **Chat logging** to the server console.
 
@@ -45,11 +45,26 @@ Linux, use BepInEx's `run_bepinex.sh` or set the Doorstop environment variables 
 | `/ban <player> [reason]` | Moderator | Adds the player to `ban_list.txt` and kicks them |
 | `/endmission [seconds]` | Admin | Ends the current mission (10 s by default) |
 | `/nextmission [mission] [normal\|coop_bdf\|coop_pala] [minutes]` | Admin | Queues the next mission, optionally co-op as a team and with a time limit; with no arguments, lists missions |
+| `/workshopmission <id> [minutes]` | Admin | Queues any Steam Workshop mission by its item ID (the server downloads it) |
+| `/missions [builtin\|custom\|workshop]` | Everyone | Lists the missions the server can play |
+| `/refreshmissions` | Admin | Re-scans custom mission files after you add some |
 | `/unkick [player\|steamid]` | Moderator | Lets a kicked player rejoin now; with no argument, lists kicked players |
 | `/setrole <player> <role>` | Owner | Sets a role: `player`, `moderator`, `admin` or `owner` |
 
-`/nextmission` autocompletes every built-in multiplayer mission. Mission names use underscores
-(`Terminal_Control`) because the game doesn't allow spaces in choices. Examples:
+`/nextmission` autocompletes every multiplayer mission the server has: built-in missions, custom
+missions and Workshop missions from your rotation.
+
+**Custom missions:** put each mission in its own folder inside the `MissionDirectory` from
+`DedicatedServerConfig.json`, as `<MissionDirectory>/<Mission Name>/<Mission Name>.json`. That's the
+same layout the in-game editor saves to, so you can copy a folder from your own game's Missions folder.
+On AMP that's `nuclear-option/3930080/Missions/`. Run `/refreshmissions` (or `refreshmissions` in the
+console) to pick up new files without a restart; players may need to rejoin to see them in
+autocomplete. A custom mission with the same name as a built-in one is listed as `custom_<name>`.
+
+**Workshop missions:** `/workshopmission 3271890874 90` queues Workshop item 3271890874 for 90
+minutes. The item ID is the number in the Workshop page's URL.
+
+Mission names use underscores (`Terminal_Control`) because the game doesn't allow spaces in choices. Examples:
 `/nextmission Escalation normal 120` and `/nextmission Terminal_Control coop_pala 90`. Without a
 duration, missions from your rotation keep their configured `MaxTime`, and other missions use the
 current mission's limit. The command only queues the mission; `/endmission` switches immediately.

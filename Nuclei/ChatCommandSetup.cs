@@ -118,15 +118,29 @@ internal static class ChatCommandSetup
     }
 
     /// <summary>
-    ///     Registers /nextmission with every built-in multiplayer mission as autocomplete choices, plus
-    ///     normal/coop and team choices. Called from <see cref="ServerLoop" /> once the dedicated server
-    ///     is running, because missions aren't indexed before that. The game forbids spaces in choices,
-    ///     so "Terminal Control" is offered as "Terminal_Control".
+    ///     First registration of the mission commands, called from <see cref="ServerLoop" /> once the
+    ///     dedicated server is running: missions (and the custom mission folder) aren't set up before that.
     /// </summary>
     internal static void TryRegisterNextMission()
     {
         if (MissionCatalog.IsBuilt || !NuclearOption.DedicatedServer.DedicatedServerManager.IsRunning)
             return;
+        BuildCatalog();
+        RegisterNextMission();
+        RegisterMissionTools();
+    }
+
+    /// <summary>Re-scans missions (e.g. after adding custom mission files) and refreshes autocomplete.</summary>
+    internal static string RefreshMissions()
+    {
+        BuildCatalog();
+        ChatCommands.UnregisterServerCommand("nextmission");
+        RegisterNextMission();
+        return $"Missions re-scanned. {MissionCatalog.All.Count()} available; players may need to rejoin to see new autocomplete entries.";
+    }
+
+    private static void BuildCatalog()
+    {
         try
         {
             MissionCatalog.Build();
@@ -135,7 +149,43 @@ internal static class ChatCommandSetup
         {
             Plugin.Log.LogError($"Couldn't index missions, /nextmission falls back to free text: {e.Message}");
         }
+    }
 
+    private static void RegisterMissionTools()
+    {
+        Register("missions", "List missions the server can play",
+            Sync(request => ChatCommandResult.Ok(ServerActions.ListMissions(request.Args.Count > 0 ? request.Args[0] : null))),
+            [ChatCommandArgument.FromChoices("type", ["builtin", "custom", "workshop"], true)],
+            Role.Player);
+
+        // Workshop IDs are too large for an Int argument, so the ID is free text.
+        Register("workshopmission", "Queue a Steam Workshop mission by its ID",
+            async request =>
+            {
+                if (request.Args.Count == 0)
+                    return ChatCommandResult.ClientError("Usage: /workshopmission <Workshop item ID> [minutes]");
+                var args = new[] { MissionCatalog.WorkshopWord }.Concat(request.Args).ToList();
+                return ChatCommandResult.Ok(await ServerActions.SetNextMission(args));
+            },
+            [
+                new ChatCommandArgument("workshop_id", ChatArgumentType.Text, false),
+                new ChatCommandArgument("minutes", ChatArgumentType.Int, true)
+            ],
+            NucleiConfig.NextMissionPermission.Value);
+
+        Register("refreshmissions", "Re-scan custom and Workshop missions",
+            Sync(_ => Ok(RefreshMissions())),
+            [],
+            NucleiConfig.NextMissionPermission.Value);
+    }
+
+    /// <summary>
+    ///     Registers /nextmission with the catalog's missions as autocomplete choices, plus a
+    ///     normal/coop_team choice. The game forbids spaces in choices, so "Terminal Control" is offered
+    ///     as "Terminal_Control".
+    /// </summary>
+    private static void RegisterNextMission()
+    {
         // The game validates arguments strictly by position, so mode and team share one slot
         // (normal, coop_bdf, coop_pala) to let the duration follow without filler arguments.
         var missions = MissionCatalog.All.Select(e => e.Token).ToArray();

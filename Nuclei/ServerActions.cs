@@ -6,6 +6,7 @@ using NuclearOption.DedicatedServer;
 using NuclearOption.DedicatedServer.Commands;
 using NuclearOption.ModdingApi;
 using NuclearOption.Networking;
+using NuclearOption.SavedMission;
 using Steamworks;
 
 namespace Nuclei;
@@ -167,7 +168,9 @@ internal static class ServerActions
             ? new[] { MissionCatalog.Coop, a.Substring(MissionCatalog.Coop.Length + 1) }
             : new[] { a }).ToList();
         int? minutes = null;
-        if (args.Count > 1 && int.TryParse(args[args.Count - 1], out var parsed))
+        // "workshop <id>": the ID itself is a number, so only a third value counts as minutes.
+        var minimumArgs = args.Count > 0 && args[0].Equals(MissionCatalog.WorkshopWord, StringComparison.OrdinalIgnoreCase) ? 2 : 1;
+        if (args.Count > minimumArgs && int.TryParse(args[args.Count - 1], out var parsed))
         {
             if (parsed < 1 || parsed > MaxMinutes)
                 return $"Duration must be between 1 and {MaxMinutes} minutes.";
@@ -175,27 +178,41 @@ internal static class ServerActions
             args.RemoveAt(args.Count - 1);
         }
 
-        if (!MissionCatalog.TryResolve(args, out var missionName, out var error))
+        if (!MissionCatalog.TryResolve(args, out var pick, out var error))
             return error;
 
         // Without a duration, rotation entries keep their configured time limit and anything else
         // uses the current mission's.
         var rotation = manager.Config.MissionRotation ?? [];
-        var match = rotation.FirstOrDefault(m => string.Equals(m.Key.Name, missionName, StringComparison.OrdinalIgnoreCase));
+        var match = rotation.FirstOrDefault(m => m.Key.Equals(pick.Key));
         var option = match.Key.Name != null
             ? match
             : new MissionOptions
             {
-                Key = new MissionKeySaveable { Group = "BuiltIn", Name = missionName },
+                Key = pick.Key,
                 MaxTime = manager.CurrentMissionOption.MaxTime > 0 ? manager.CurrentMissionOption.MaxTime : DefaultMaxTime
             };
         if (minutes != null)
             option.MaxTime = minutes.Value * 60f;
 
+        // Workshop missions are downloaded here by the game if the server doesn't have them yet.
         var ok = await manager.SetNextMissionAsync(option);
+        var display = pick.Display;
+        if (ok && string.Equals(pick.Key.Group, "Workshop", StringComparison.OrdinalIgnoreCase))
+            try
+            {
+                // Downloaded now, so the item's real mission name is known.
+                if (pick.Key.TryGetKey(out MissionKey resolved) && !string.IsNullOrWhiteSpace(resolved.Name))
+                    display = $"{resolved.Name} (Workshop {pick.Key.Name})";
+            }
+            catch
+            {
+                // keep the ID-based name
+            }
+
         return ok
-            ? $"Next mission set to {missionName} ({option.MaxTime / 60:0} min). Use /endmission to switch now."
-            : $"Couldn't load mission '{missionName}'.";
+            ? $"Next mission set to {display} ({option.MaxTime / 60:0} min). Use /endmission to switch now."
+            : $"Couldn't load mission '{pick.Display}'. Check the server log for the reason.";
     }
 
     /// <summary>Mission name as a single chat token: "Terminal Control" becomes "Terminal_Control".</summary>
@@ -204,14 +221,14 @@ internal static class ServerActions
         return string.Join("_", (missionName ?? "").Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
     }
 
-    internal static string ListMissions()
+    internal static string ListMissions(string? filter = null)
     {
         var rotation = Manager?.Config?.MissionRotation;
         var rotationText = rotation == null || rotation.Length == 0
             ? "No mission rotation configured."
             : "Rotation: " + string.Join(", ", rotation.Select(m => m.Key.Name));
-        return rotationText + "\n" + MissionCatalog.ListText() +
-               "\nUsage: nextmission <mission> [normal|coop_<team>] [minutes]";
+        return rotationText + "\n" + MissionCatalog.ListText(filter) +
+               "\nUsage: nextmission <mission> [normal|coop_<team>] [minutes]; workshop: workshopmission <id> [minutes]";
     }
 
     /// <summary>

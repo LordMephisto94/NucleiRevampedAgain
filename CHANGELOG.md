@@ -34,6 +34,9 @@ Rewritten for the official Nuclear Option dedicated server (game 0.34.x, Steam a
 - `/announce` / `announce`: a message-feed announcement with a sound.
 - `/popup <seconds> <title|message>` / `popup`: a centred popup window (the mission dialog box) that
   closes itself after the given seconds.
+- Custom missions (files in `MissionDirectory`) and Workshop missions in the rotation are offered by
+  `/nextmission`. New commands: `/workshopmission <id> [minutes]` queues any Workshop mission,
+  `/missions [builtin|custom|workshop]` lists missions, and `/refreshmissions` re-scans after you add files.
 - All plugin messages go through the Unity log, so they appear in panel consoles such as AMP.
 
 ## 1.3.3 - 2025-05-18
