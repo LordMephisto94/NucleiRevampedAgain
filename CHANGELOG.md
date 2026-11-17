@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## 2.0.0 - 2026-11-16
+
+Rewritten for the official Nuclear Option dedicated server (game 0.34.x, Steam app 3930080).
+
+### Removed
+
+- Self-hosting through a batch-mode game client and Steam lobby, mission rotation, mission time limits,
+  and the ban check. The game's dedicated server does all of this through `DedicatedServerConfig.json`.
+- All Harmony patches on game internals except the optional chat logger.
+
+### Added
+
+- Staff roles (Owner, Admin, Moderator) are assigned from config through the game's ModdingApi. The
+  built-in `/adminkick` and permission-gated commands respect them.
+- Optional role tags next to staff names.
+- Chat commands registered through the official API: `/say`, `/ban`, `/endmission`,
+  `/nextmission` and `/setrole`, with a configurable permission level for each.
+- Console commands read from standard input, for AMP and other panels: `status`, `say`, `kick`, `ban`,
+  `setrole`, `endmission`, `nextmission`, `reload` and `help`.
+- Chat logging to the server console as `[Chat] [All|Team] Name (steamid): message`.
+- `/nextmission <mission> [normal|coop_<team>] [minutes]` autocompletes every built-in multiplayer
+  mission, including co-op variants with a team choice, and takes an optional time limit in minutes.
+- `unkick` / `/unkick`, `kicks` and `clearkicks` let kicked players back in before the mission
+  changes or the server restarts. The console `kick` is now a mission kick, like `/adminkick`.
+- `/announce` / `announce`: a message-feed announcement with a sound.
+- `/popup <seconds> <title|message>` / `popup`: a centred popup window (the mission dialog box) that
+  closes itself after the given seconds.
+- Custom missions (files in `MissionDirectory`) and Workshop missions in the rotation are offered by
+  `/nextmission`. New commands: `/workshopmission <id> [minutes]` queues any Workshop mission,
+  `/missions [builtin|custom|workshop]` lists missions, and `/refreshmissions` re-scans after you add files.
+- All plugin messages go through the Unity log, so they appear in panel consoles such as AMP.
+
 ## 1.3.3 - 2025-05-18
 
 ### Changed
